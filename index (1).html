@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><base target="_top"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Controle de Fichas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--ac:#6366f1;--bg:#f4f5fb;--tx:#0f172a;--mu:#6b7280;--bd:#e8eaf4;--ok:#10b981;--bad:#ef4444;--warn:#f59e0b}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 Inter,'Segoe UI',Roboto,Arial,sans-serif;background:radial-gradient(900px 400px at 85% -5%,#e6e8ff,transparent),var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased}
+.i{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+aside{position:fixed;top:0;bottom:0;left:0;width:244px;background:linear-gradient(180deg,#0a0f2c,#171a4a 55%,#2b1b66);color:#c3c8ea;padding:22px 16px;display:flex;flex-direction:column;z-index:6}
+.brand{display:flex;gap:12px;align-items:center;margin:0 6px 30px;color:#fff;font-weight:800;font-size:17px;line-height:1.1}
+.brand i{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#6366f1,#ec4899);display:grid;place-items:center;box-shadow:0 10px 24px rgba(99,102,241,.5)}
+.brand small{display:block;font-weight:500;font-size:11px;color:#8f96cf;margin-top:3px}
+nav a{display:flex;gap:12px;align-items:center;padding:11px 14px;border-radius:12px;cursor:pointer;margin-bottom:5px;color:#c3c8ea;font-weight:500;transition:.15s;text-decoration:none}
+nav a:hover{background:rgba(255,255,255,.08);color:#fff}nav a.on{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 10px 22px rgba(99,102,241,.45)}
+nav .n{margin-left:auto;background:rgba(255,255,255,.15);border-radius:99px;padding:1px 9px;font-size:11px;font-weight:600}
+#plan{margin-top:auto;border:1px solid rgba(255,255,255,.14)}
+main{margin-left:244px;padding:26px 32px 40px}main.f{padding-bottom:190px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{margin:0;font-size:27px;font-weight:800;letter-spacing:-.6px}.sub{color:var(--mu);margin:3px 0 0}.mu{color:var(--mu)}.sp{flex:1}
+.chip{display:inline-block;background:#fff;border:1px solid var(--bd);border-radius:99px;padding:7px 14px;margin-left:8px;font-size:12px;color:var(--mu);box-shadow:0 1px 2px rgba(15,23,42,.04)}.chip b{color:var(--tx)}
+.view{display:none}.view.on{display:block;animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:#fff;border:1px solid var(--bd);border-radius:20px;padding:20px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 30px -18px rgba(30,41,120,.25)}
+.card h3{margin:0 0 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}.card h3 small{margin-left:auto;font-weight:500;color:var(--mu);font-size:12px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:14px;margin-bottom:18px}
+.kpi{padding:18px 20px}.kpi .ib{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff;margin-bottom:14px;box-shadow:0 10px 20px -8px rgba(15,23,42,.35)}
+.kpi small{color:var(--mu);font-weight:500}.kpi b{display:block;font-size:26px;font-weight:800;letter-spacing:-.8px;margin:2px 0 0}.kpi em{font-style:normal;font-size:12.5px;color:var(--mu)}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px;margin-bottom:18px}
+svg{width:100%;height:auto}.v{font-size:11px;font-weight:600;fill:#334155}.l{font-size:10.5px;fill:var(--mu)}
+.dw{display:flex;align-items:center;gap:22px}.donut{max-width:170px;flex:none}.dn{font-size:26px;font-weight:800;fill:var(--tx)}
+.dw ul{list-style:none;margin:0;padding:0;flex:1}.dw li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:#f8f9fe}.dw li i{width:12px;height:12px;border-radius:4px;flex:none}.dw li span{flex:1}.dw li small{display:block;color:var(--mu)}.dw li b{font-size:18px}
+.hb{display:grid;grid-template-columns:135px 1fr 76px;gap:10px;align-items:center;margin:11px 0}.hb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.hb div{display:flex;background:#eef0f8;border-radius:8px;height:14px;overflow:hidden}.hb u{display:block;height:100%}.hb b{text-align:right;font-size:12px}
+.tp{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--bd)}.tp:last-child{border:0}.tp .nm{flex:1;min-width:0}.tp .nm b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tp small{color:var(--mu)}
+.rk{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}.rk.w{background:linear-gradient(135deg,#f59e0b,#f97316)}
+.clk{cursor:pointer}.clk:hover{opacity:.78}
+input,select,.btn{font:inherit;border:1px solid var(--bd);border-radius:11px;padding:8px 11px;background:#fff;color:var(--tx);outline:none}input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:0;cursor:pointer;text-decoration:none;display:inline-block;font-weight:600;box-shadow:0 8px 16px -8px rgba(99,102,241,.7)}
+.btn.sec{background:#eef0ff;color:#3730a3;box-shadow:none}.btn.red{background:#fee2e2;color:#b91c1c;box-shadow:none}.btn:disabled{opacity:.45;cursor:default}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:inline-flex;background:#eceefb;border-radius:13px;padding:4px;gap:2px}.seg button{border:0;background:none;padding:8px 16px;border-radius:10px;font:inherit;font-weight:600;color:var(--mu);cursor:pointer}.seg button span{opacity:.6;margin-left:4px;font-weight:500}.seg button.on{background:#fff;color:var(--tx);box-shadow:0 2px 8px rgba(15,23,42,.12)}
+.tw{overflow:auto;max-height:64vh;border:1px solid var(--bd);border-radius:14px}
+table{border-collapse:collapse;width:100%}th,td{padding:11px 14px;border-bottom:1px solid #f0f2f9;white-space:nowrap;text-align:left}
+th{background:#f8f9fe;position:sticky;top:0;cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--mu);z-index:1}tbody tr:hover td{background:#f8f9ff}
+.pill{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:600}
+.ok{background:#d1fae5;color:#047857}.bad{background:#fee2e2;color:#b91c1c}.warn{background:#fef3c7;color:#b45309}.info{background:#e0e7ff;color:#4338ca}.gray{background:#f1f5f9;color:#475569}
+.dz{display:block;border:2px dashed #c7cbf7;border-radius:18px;padding:34px;text-align:center;color:var(--mu);cursor:pointer;background:linear-gradient(180deg,#fafaff,#f3f4ff);transition:.15s}.dz:hover,.dz.hv{border-color:var(--ac);background:#eef0ff}.dz b{color:var(--tx)}
+textarea{width:100%;height:100px;border:1px solid var(--bd);border-radius:12px;padding:11px;font:12px monospace;outline:none}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s}.steps li{counter-increment:s;display:flex;gap:12px;margin-bottom:14px;color:#334155}.steps li:before{content:counter(s);width:26px;height:26px;border-radius:9px;background:#e0e7ff;color:#4338ca;display:grid;place-items:center;font-weight:700;flex:none}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px;margin-top:16px}
+.fc{display:flex;flex-direction:column;gap:6px;padding:12px}.fc b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fc small{color:var(--mu)}
+.th{height:134px;border-radius:14px;background:#f1f3fb;display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden;cursor:pointer}.th img{width:100%;height:100%;object-fit:cover}
+.ac{display:flex;gap:6px;margin-top:4px}.ac .btn{padding:6px 10px;font-size:12px}
+#filtros{position:fixed;left:244px;right:0;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-top:1px solid var(--bd);padding:8px 24px 12px;box-shadow:0 -10px 30px -12px rgba(30,41,120,.25);display:none;z-index:5}#filtros.on{display:block}
+.fh{display:flex;align-items:center;gap:10px;margin-bottom:8px}.fh b{display:flex;gap:6px;align-items:center}.fs{display:flex;flex-wrap:wrap;gap:10px}#filtros.min .fs{display:none}
+#filtros label{display:flex;flex-direction:column;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu);gap:4px}#filtros input,#filtros select{padding:6px 9px;font-size:13px}#filtros input{width:92px}#filtros select{width:128px}
+#lb{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(10,15,44,.88);display:none;align-items:center;justify-content:center;z-index:20}#lb.on{display:flex}#lb img{max-width:92%;max-height:92%;border-radius:12px}
+#toast{position:fixed;top:20px;right:20px;background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;display:none;z-index:30;box-shadow:0 14px 30px rgba(0,0,0,.3);max-width:420px}#toast.on{display:block}#toast.er{background:#b91c1c}
+.er{color:#b91c1c}#err{display:none;background:#fee2e2;color:#991b1b;border-radius:14px;padding:13px 18px;margin-bottom:16px;cursor:pointer}#err.on{display:block}
+.empty{text-align:center;padding:30px;color:var(--mu);grid-column:1/-1}
+.mks{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:12px;margin-bottom:16px}.mk{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:12px 14px}.mk small{color:var(--mu);font-weight:500}.mk b{display:block;font-size:19px;font-weight:800;letter-spacing:-.4px}
+tr.cl{cursor:pointer}tr.cl.open td{background:#f1f2ff}tr.dt td{background:#fafbff;padding:18px 20px;white-space:normal}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:16px}.mg div{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:10px 12px}.mg small{display:block;color:var(--mu);font-size:11px}.mg b{font-size:14px}
+table.st th,table.st td{padding:8px 10px;font-size:12.5px}
+@media(max-width:860px){aside{position:static;width:auto;flex-direction:row;padding:10px;overflow:auto;gap:6px}.brand{display:none}#plan{margin:0}main{margin:0;padding:16px}#filtros{left:0}.g2{grid-template-columns:1fr}.dw{flex-direction:column}}
+</style></head><body>
+<svg style="display:none"><defs>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5l5 5M4 20h16"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9zM14 3v6h6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></symbol>
+<symbol id="i-bi" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></symbol>
+</defs></svg>
+
+<aside>
+<div class="brand"><i><svg class="i" style="color:#fff"><use href="#i-check"/></svg></i><div>Controle de<br>Fichas<small>Gestão de contratos</small></div></div>
+<nav>
+<a data-v="dash" class="on" onclick="ir('dash')"><svg class="i"><use href="#i-dash"/></svg>Dashboard</a>
+<a data-v="clientes" onclick="ir('clientes')"><svg class="i"><use href="#i-users"/></svg>Clientes<span class="n" id="nl"></span></a>
+<a data-v="contratos" onclick="ir('contratos')"><svg class="i"><use href="#i-list"/></svg>Contratos<span class="n" id="nc"></span></a>
+<a data-v="saiu" onclick="ir('saiu')"><svg class="i"><use href="#i-out"/></svg>Saiu de base<span class="n" id="ns"></span></a>
+<a data-v="importar" onclick="ir('importar')"><svg class="i"><use href="#i-up"/></svg>Importar base</a>
+<a data-v="importarbi" onclick="ir('importarbi')"><svg class="i"><use href="#i-bi"/></svg>Importar BE (BI)</a>
+<a data-v="arquivos" onclick="ir('arquivos')"><svg class="i"><use href="#i-folder"/></svg>Arquivos</a>
+<a id="plan" style="display:none" target="_blank"><svg class="i"><use href="#i-file"/></svg>Abrir planilha</a>
+</nav></aside>
+
+<main id="main" class="f">
+<div class="top"><div><h1 id="tt">Dashboard</h1><p class="sub" id="ss"></p></div><div id="chips"></div></div>
+<div id="err" title="Clique para fechar" onclick="this.classList.remove('on')"></div>
+
+<section id="dash" class="view on">
+<div class="kpis" id="kpis"></div>
+<div class="g2"><div class="card"><h3>Ativo × Prejuízo</h3><div id="c1" class="dw"></div></div>
+<div class="card"><h3>Fichas novas por dia <small>clique numa barra para filtrar</small></h3><div id="c2"></div></div></div>
+<div class="g2"><div class="card"><h3>Saldo por filial <small><i class="dot" style="background:#10b981"></i>ativo<i class="dot" style="background:#ef4444"></i>prejuízo</small></h3><div id="c3"></div></div>
+<div class="card"><h3>Dias de atraso <small>vermelho = prejuízo</small></h3><div id="c4"></div></div></div>
+<div class="g2"><div class="card"><h3>Maiores saldos</h3><div id="topsal"></div></div>
+<div class="card"><h3>Saiu de base</h3><p class="mu" style="margin:-6px 0 8px">Contratos que estavam na planilha e não estão mais.</p><div id="sbrec"></div></div></div>
+<div class="g2"><div class="card"><h3>Situação de cobrança <small>BI · clique para filtrar</small></h3><div id="c5"></div></div>
+<div class="card"><h3>Acordos <small>BI</small></h3><div id="c6" class="dw"></div></div></div>
+</section>
+
+<section id="clientes" class="view">
+<div class="mks" id="kc"></div>
+<div class="card">
+<div class="bar"><b style="font-size:16px">Clientes</b><span class="mu">clique numa linha para ver os contratos</span><span class="sp"></span><b id="in3" class="mu"></b>
+<button class="btn sec" onclick="exportar('cl')">Exportar CSV</button><button class="btn sec" id="pa3" onclick="pagCli(-1)">‹</button><button class="btn sec" id="pn3" onclick="pagCli(1)">›</button></div>
+<div class="tw"><table><thead id="thc"></thead><tbody id="tbc"></tbody></table></div></div></section>
+
+<section id="contratos" class="view"><div class="card">
+<div class="bar"><div class="seg" id="seg"></div><span class="sp"></span><b id="in1" class="mu"></b>
+<button class="btn sec" onclick="exportar('c')">Exportar CSV</button><button class="btn sec" id="pa1" onclick="pagina('c',-1)">‹</button><button class="btn sec" id="pn1" onclick="pagina('c',1)">›</button></div>
+<div class="tw"><table><thead id="th1"></thead><tbody id="tb1"></tbody></table></div></div></section>
+
+<section id="saiu" class="view"><div class="card">
+<div class="bar"><b style="font-size:16px">Saiu de base</b><span class="chip" id="sk" style="margin:0"></span><span class="sp"></span><b id="in2" class="mu"></b>
+<button class="btn sec" onclick="exportar('s')">Exportar CSV</button><button class="btn sec" id="pa2" onclick="pagina('s',-1)">‹</button><button class="btn sec" id="pn2" onclick="pagina('s',1)">›</button></div>
+<p class="mu" style="margin:-4px 0 14px">Contratos que estavam na planilha e não aparecem mais na última base importada, com a data em que saíram.</p>
+<div class="tw"><table><thead id="th2"></thead><tbody id="tb2"></tbody></table></div></div></section>
+
+<section id="importar" class="view"><div class="g2">
+<div class="card">
+<label class="dz" id="dz1"><svg class="i" style="width:34px;height:34px;color:var(--ac)"><use href="#i-up"/></svg><br><b>Arraste a planilha</b> (.xlsx, .xlsm, .xls, .csv) ou clique para escolher<br><b id="fn"></b><input type="file" hidden accept=".xlsx,.xlsm,.xls,.csv"></label>
+<p class="mu">Ou cole a base copiada do Excel (com o cabeçalho):</p>
+<textarea id="cola" placeholder="Cole aqui..." oninput="IMPFILE=null;prever(this.value.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t')))"></textarea>
+<div class="bar" style="margin:14px 0 6px"><label>Data da base: <input type="date" id="dia"></label></div>
+<label style="display:block;margin:6px 0"><input type="checkbox" id="saidas" checked onchange="prever(IMP)"> Marcar como <b>saiu de base</b> os contratos que não estão neste arquivo</label>
+<label style="display:block;margin:6px 0"><input type="checkbox" id="guardar" checked> Guardar o arquivo na aba Arquivos</label>
+<div class="bar" style="margin:14px 0 0"><span id="prev" class="mu" style="flex:1"></span><button class="btn" id="btnImp" disabled onclick="salvarImp()">Salvar base</button></div>
+</div>
+<div class="card"><h3>Como funciona</h3><ul class="steps">
+<li><span>Importe a <b>base completa</b> todo dia. Todos os contratos são guardados, não só as fichas novas.</span></li>
+<li><span>Contratos já existentes são <b>atualizados</b>; os novos entram com a data do dia (e "Ficha nova" quando a Situação diz isso).</span></li>
+<li><span>Até <b>400 dias</b> de atraso = <b>Ativo</b>. Acima disso = <b>Prejuízo</b>.</span></li>
+<li><span>Quem estava na planilha e não veio no arquivo vai para <b>Saiu de base</b>, com a data. Se voltar numa base futura, volta sozinho.</span></li>
+</ul></div></div></section>
+
+<section id="importarbi" class="view"><div class="g2">
+<div class="card">
+<label class="dz" id="dz3"><svg class="i" style="width:34px;height:34px;color:var(--ac)"><use href="#i-bi"/></svg><br><b>Arraste o arquivo do BE (BI)</b> (.xlsx, .xlsm, .xls, .csv) ou clique para escolher<br><b id="fnb"></b><input type="file" hidden accept=".xlsx,.xlsm,.xls,.csv"></label>
+<div class="bar" style="margin:14px 0 6px"><label>Data do BI: <input type="date" id="diaBI"></label></div>
+<label style="display:block;margin:6px 0"><input type="checkbox" id="guardarBI" checked> Guardar o arquivo na aba Arquivos</label>
+<div class="bar" style="margin:14px 0 0"><span id="prevBI" class="mu" style="flex:1"></span><button class="btn" id="btnBI" disabled onclick="salvarBI()">Importar BE (BI)</button></div>
+</div>
+<div class="card"><h3>Como funciona</h3><ul class="steps">
+<li><span>O <b>contrato</b> (nrcontrato_Cyber) liga o BI à Base. É a chave principal.</span></li>
+<li><span>O BI <b>não tem duplicidade removida</b>: todas as linhas ficam guardadas na aba BI da planilha.</span></li>
+<li><span>Os contratos são agrupados por <b>CPF</b> (ou conta/cooperativa). O nome aparece, mas não é usado como chave.</span></li>
+<li><span><b>FLG_PREJUIZO</b> vale por contrato: SIM = prejuízo, NÃO = ativo. Sem BI, vale a regra dos 400 dias.</span></li>
+<li><span>A aba BI é <b>substituída</b> a cada importação, porque o arquivo do BI é a foto completa.</span></li>
+</ul></div></div></section>
+
+<section id="arquivos" class="view"><div class="card">
+<label class="dz" id="dz2"><svg class="i" style="width:34px;height:34px;color:var(--ac)"><use href="#i-folder"/></svg><br><b>Arraste imagens, planilhas e XLSM</b> ou clique para enviar<br><small>Também dá para colar um print com Ctrl+V</small><input type="file" hidden multiple accept="image/*,.xlsx,.xlsm,.xls,.csv,.pdf"></label>
+<div class="bar" style="margin-top:16px"><input id="aq" placeholder="Buscar arquivo..." oninput="rArq()"></div>
+<div class="files" id="ag"></div></div></section>
+</main>
+
+<div id="filtros"><div class="fh"><b><svg class="i"><use href="#i-filter"/></svg>Filtros</b><span id="fcount" class="mu"></span><span class="sp"></span>
+<button class="btn sec" onclick="limpar()">Limpar</button><button class="btn sec" onclick="$('filtros').classList.toggle('min')">Recolher / abrir</button></div>
+<div class="fs">
+<label>Dia de entrada<select id="fd" oninput="aplicar()"></select></label>
+<label>Origem<select id="fo" oninput="aplicar()"><option value="">Todas</option><option value="Ficha nova">Ficha nova</option><option value="Base">Já estava na base</option></select></label>
+<label>Classificação<select id="fc" oninput="aplicar()"><option value="">Todos</option><option>Ativo</option><option>Prejuízo</option></select></label>
+<label>Filial<select id="ff" oninput="aplicar()"></select></label>
+<label>Situação<select id="fs" oninput="aplicar()"></select></label>
+<label>Saiu em<select id="fx" oninput="aplicar()"></select></label>
+<label>Situação (cobrança)<select id="fb" oninput="aplicar()"><option value="">Todas</option><option>Recuperação efetiva</option><option>Acordo ativo</option><option>Recuperação</option><option>Ativo</option><option>Prejuízo</option></select></label>
+<label>Acordo<select id="fa" oninput="aplicar()"><option value="">Todos</option><option>Acordo ativo</option><option>Sem acordo</option></select></label>
+<label>Busca geral<input id="fq" style="width:150px" placeholder="nome, CPF, contrato..." oninput="aplicar()"></label>
+<label>Saldo mín.<input id="smin" type="number" oninput="aplicar()"></label><label>Saldo máx.<input id="smax" type="number" oninput="aplicar()"></label>
+<label>Atraso mín.<input id="dmin" type="number" oninput="aplicar()"></label><label>Atraso máx.<input id="dmax" type="number" oninput="aplicar()"></label>
+</div></div>
+<div id="lb" onclick="this.classList.remove('on')"><img id="lbi"></div><div id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id),LIM=400,COL=['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'],CL=new Intl.Collator('pt',{numeric:true});
+const run=(fn,...a)=>new Promise((ok,no)=>google.script.run.withSuccessHandler(ok).withFailureHandler(no)[fn](...a));
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const num=v=>{if(typeof v==='number')return v;let s=String(v==null?'':v).replace(/[^\d,.\-]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isNaN(n)?0:n};
+const brl=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const short=n=>n>=1e6?'R$ '+(n/1e6).toFixed(1)+' mi':n>=1e3?'R$ '+Math.round(n/1e3)+' mil':'R$ '+Math.round(n);
+const dt=d=>/^\d{4}-\d\d-\d\d$/.test(d)?d.split('-').reverse().join('/'):(d||'—');
+const tam=n=>n>1e6?(n/1e6).toFixed(1)+' MB':Math.ceil(n/1e3)+' KB';
+let D={cab:[],rows:[]},R=[],B=[],SB=[],X={},A=[],S={i:0,d:-1},pg={c:0,s:0},IMP=[],IMPFILE=null,V='dash';
+const T={dash:['Dashboard','Visão geral dos contratos filtrados'],contratos:['Contratos','Todos os contratos em base, separados em ativos e prejuízo'],saiu:['Saiu de base','Contratos que estavam na planilha e não estão mais'],importar:['Importar base','Envie a base completa do dia'],arquivos:['Arquivos','Imagens, planilhas e XLSM para consulta']};
+
+function toast(m,e){const t=$('toast');t.textContent=m;t.className='on'+(e?' er':'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='',e?9000:4500)}
+function erro(e){const m=String((e&&e.message)||e||'erro desconhecido');$('err').innerHTML='⚠️ <b>Algo deu errado:</b> '+esc(m)+'<br><small>Se você acabou de colar o código novo: em Implantar › Gerenciar implantações, edite e publique uma <b>nova versão</b> e autorize as permissões do Google (Planilhas e Drive).</small>';$('err').classList.add('on')}
+window.addEventListener('error',e=>erro(e.error||e.message));
+function ir(v){V=v;document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));document.querySelectorAll('nav a[data-v]').forEach(e=>e.classList.toggle('on',e.dataset.v===v));
+ const f=v==='dash'||v==='contratos'||v==='saiu';$('filtros').classList.toggle('on',f);$('main').classList.toggle('f',f);$('tt').textContent=T[v][0];$('ss').textContent=T[v][1];
+ S=v==='saiu'?{i:4,d:-1}:{i:0,d:-1};pg={c:0,s:0};if(v==='arquivos')arqs();else render()}
+function mapa(){const f=p=>D.cab.findIndex((c,i)=>i>=5&&norm(c).startsWith(p));X={nome:f('nome'),fil:f('filial'),cpf:f('cpf'),sit:f('situa'),con:f('contrato'),sal:f('saldo'),dia:f('dias')}}
+async function carregar(){try{const r=await run('listar');D={cab:r.cab,rows:r.linhas};mapa();R=D.rows.map(a=>{const dia=num(a[X.dia]);return{a,sal:num(a[X.sal]),dia,prej:dia>LIM,saiu:a[4]!=='',t:norm(a.join(' '))}});opcoes();aplicar();$('err').classList.remove('on')}catch(e){erro(e)}}
+function opcoes(){const u=i=>[...new Set(R.map(o=>o.a[i]))].filter(x=>x!=null&&x!==''&&x!=='undefined');
+ const fill=(id,v,f)=>{const s=$(id),c=s.value;s.innerHTML='<option value="">Todos</option>'+v.map(x=>`<option value="${esc(x)}">${esc(f?f(x):x)}</option>`).join('');s.value=v.includes(c)?c:''};
+ fill('fd',u(0).sort().reverse(),dt);fill('ff',u(X.fil).sort());fill('fs',u(X.sit).sort());fill('fx',u(4).sort().reverse(),dt)}
+function limpar(){['fd','fo','fc','ff','fs','fx','fq','smin','smax','dmin','dmax'].forEach(i=>$(i).value='');aplicar()}
+let Bn=[];
+function aplicar(){pg={c:0,s:0};const v=id=>$(id).value,q=norm(v('fq')),n=id=>{const x=parseFloat(v(id));return isNaN(x)?null:x},a=n('smin'),b=n('smax'),c=n('dmin'),d=n('dmax'),fc=v('fc'),fo=v('fo'),fd=v('fd'),ff=v('ff'),fs=v('fs'),fx=v('fx');
+ const ok=o=>{const r=o.a;if(fd&&r[0]!==fd)return 0;if(fo&&r[1]!==fo)return 0;if(ff&&r[X.fil]!==ff)return 0;if(fs&&r[X.sit]!==fs)return 0;if(q&&!o.t.includes(q))return 0;
+  if(a!=null&&o.sal<a||b!=null&&o.sal>b||c!=null&&o.dia<c||d!=null&&o.dia>d)return 0;return 1};
+ Bn=R.filter(o=>!o.saiu&&ok(o));B=fc?Bn.filter(o=>(fc==='Prejuízo')===o.prej):Bn;SB=R.filter(o=>o.saiu&&ok(o)&&(!fc||(fc==='Prejuízo')===o.prej)&&(!fx||o.a[4]===fx));render()}
+function chips(){const u=R.reduce((m,o)=>o.a[3]>m?o.a[3]:m,''),em=R.filter(o=>!o.saiu).length;$('chips').innerHTML=R.length?`<span class="chip">Atualizado em <b>${dt(u)}</b></span><span class="chip"><b>${em}</b> contratos em base</span>`:'';
+ $('nc').textContent=em||'';$('ns').textContent=R.length-em||'';$('fcount').textContent=(V==='saiu'?SB:B).length+' resultado(s)'}
+function render(){chips();if(V==='dash')dash();else if(V==='contratos')tab('c');else if(V==='saiu')tab('s')}
+
+function col(id,it,f){const W=560,H=230,pl=10,pr=10,pt=26,pb=34,mx=Math.max(1,...it.map(i=>i[1])),bw=(W-pl-pr)/Math.max(it.length,1);let s=`<svg viewBox="0 0 ${W} ${H}">`;
+ for(let k=0;k<=3;k++){const y=pt+(H-pt-pb)*k/3;s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#eef0f7"/>`}
+ it.forEach((x,i)=>{const c=x[3]||COL[0],h=(H-pt-pb)*x[1]/mx,px=pl+i*bw+bw*.18,w=bw*.64,y=H-pb-h,cx=px+w/2,a=f&&x[2]?`class="clk" data-f="${f}" data-k="${esc(x[2])}"`:'';
+  s+=`<g ${a}><defs><linearGradient id="${id}${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity=".5"/></linearGradient></defs><rect x="${px}" y="${y}" width="${w}" height="${Math.max(h,x[1]?2:0)}" rx="7" fill="url(#${id}${i})"/><text x="${cx}" y="${y-7}" text-anchor="middle" class="v">${x[1]}</text><text x="${cx}" y="${H-12}" text-anchor="middle" class="l">${esc(x[0])}</text></g>`});
+ $(id).innerHTML=s+'</svg>'}
+function donut(id,it){const t=it.reduce((a,i)=>a+i[1],0),C=2*Math.PI*52;let o=0,s='<svg viewBox="0 0 140 140" class="donut"><circle r="52" cx="70" cy="70" fill="none" stroke="#eef0f7" stroke-width="20"/>',l='';
+ it.forEach(x=>{const n=t?C*x[1]/t:0;s+=`<circle r="52" cx="70" cy="70" fill="none" stroke="${x[2]}" stroke-width="20" stroke-dasharray="${n} ${C-n}" stroke-dashoffset="${-o}" transform="rotate(-90 70 70)"/>`;o+=n;l+=`<li class="clk" data-f="fc" data-k="${x[4]}"><i style="background:${x[2]}"></i><span>${x[0]}<small>${x[3]}</small></span><b>${x[1]}</b></li>`});
+ $(id).innerHTML=s+`<text x="70" y="68" text-anchor="middle" class="dn">${t}</text><text x="70" y="86" text-anchor="middle" class="l">contratos</text></svg><ul>${l}</ul>`}
+function stack(id,it){const mx=Math.max(1,...it.map(i=>i[1]+i[2]));$(id).innerHTML=it.map(x=>`<div class="hb clk" data-f="ff" data-k="${esc(x[0])}"><span title="${esc(x[0])}">${esc(x[0])}</span><div><u style="width:${100*x[1]/mx}%;background:#10b981"></u><u style="width:${100*x[2]/mx}%;background:#ef4444"></u></div><b>${short(x[1]+x[2])}</b></div>`).join('')||'<p class="mu">Sem dados.</p>'}
+const pill=o=>`<span class="pill ${o.prej?'bad':'ok'}">${o.prej?'Prejuízo':'Ativo'} · ${o.dia}d</span>`;
+function dash(){const sm=l=>l.reduce((s,o)=>s+o.sal,0),at=B.filter(o=>!o.prej),pj=B.filter(o=>o.prej),fn=B.filter(o=>o.a[1]==='Ficha nova');
+ const kp=[['Contratos em base',B.length,brl(sm(B)),'#6366f1,#8b5cf6','dash'],['Ativos (até '+LIM+' dias)',at.length,brl(sm(at)),'#10b981,#34d399','check'],['Prejuízo (+'+LIM+' dias)',pj.length,brl(sm(pj)),'#ef4444,#f97316','alert'],['Fichas novas',fn.length,brl(sm(fn)),'#0ea5e9,#6366f1','plus'],['Saiu de base',SB.length,brl(sm(SB)),'#f59e0b,#f97316','out']];
+ $('kpis').innerHTML=(R.length?'':'<div class="card empty">Nenhum contrato ainda. Vá em <b>Importar base</b> e envie a primeira planilha.</div>')+kp.map(k=>`<div class="card kpi"><div class="ib" style="background:linear-gradient(135deg,${k[3]})"><svg class="i"><use href="#i-${k[4]}"/></svg></div><small>${k[0]}</small><b>${k[1]}</b><em>${k[2]}</em></div>`).join('');
+ donut('c1',[['Ativos',at.length,'#10b981',brl(sm(at)),'Ativo'],['Prejuízo',pj.length,'#ef4444',brl(sm(pj)),'Prejuízo']]);
+ const g=(l,kf)=>{const m=new Map();l.forEach(o=>{const k=kf(o),e=m.get(k)||[0,0,0];e[0]++;e[o.prej?2:1]+=o.sal;m.set(k,e)});return[...m]};
+ col('c2',g(fn,o=>o.a[0]).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14).map(([k,e])=>[k.slice(8)+'/'+k.slice(5,7),e[0],k]),'fd');
+ stack('c3',g(B,o=>o.a[X.fil]||'—').map(([k,e])=>[k,e[1],e[2]]).sort((a,b)=>b[1]+b[2]-a[1]-a[2]).slice(0,8));
+ col('c4',[[0,30],[31,60],[61,90],[91,180],[181,300],[301,400],[401,700],[701,1e9]].map(([a,b])=>[b>1e8?a+'+':a+'-'+b,B.filter(o=>o.dia>=a&&o.dia<=b).length,'',a>LIM?'#ef4444':'#6366f1']));
+ $('topsal').innerHTML=[...B].sort((a,b)=>b.sal-a.sal).slice(0,10).map((o,i)=>`<div class="tp"><span class="rk">${i+1}</span><div class="nm"><b>${esc(o.a[X.nome])}</b><small>${esc(o.a[X.fil])} · contrato ${esc(o.a[X.con])}</small></div>${pill(o)}<strong>${brl(o.sal)}</strong></div>`).join('')||'<p class="mu">Sem dados para os filtros atuais.</p>';
+ const m=new Map();SB.forEach(o=>{const k=o.a[4],e=m.get(k)||[0,0];e[0]++;e[1]+=o.sal;m.set(k,e)});
+ $('sbrec').innerHTML=[...m].sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6).map(([k,e])=>`<div class="tp clk" data-go="saiu" data-f="fx" data-k="${k}"><span class="rk w">${k.slice(8)}/${k.slice(5,7)}</span><div class="nm"><b>${e[0]} contrato(s)</b><small>saíram da base em ${dt(k)}</small></div><strong>${brl(e[1])}</strong></div>`).join('')||'<p class="mu">Nenhum contrato saiu da base.</p>'}
+
+const cols=k=>{const o=D.cab.map((_,i)=>i).filter(i=>i>=5);return k==='s'?[4,...o,0]:[0,1,2,...o]};
+function cel(o,i){const c=o.a[i];if(i===0||i===3||i===4)return dt(c);if(i===1)return `<span class="pill ${c==='Ficha nova'?'info':'gray'}">${esc(c)}</span>`;if(i===2)return `<span class="pill ${o.prej?'bad':'ok'}">${o.prej?'Prejuízo':'Ativo'}</span>`;
+ if(i===X.sal)return '<b>'+brl(o.sal)+'</b>';if(i===X.dia)return `<span class="pill ${o.dia>LIM?'bad':o.dia>180?'warn':'ok'}">${o.dia}</span>`;if(i===X.sit)return `<span class="pill gray">${esc(c)}</span>`;return esc(c)}
+function tab(k){const s=k==='s',L=s?SB:B,n=s?2:1,cs=cols(k),P=100,ini=pg[k]*P,i=S.i;
+ const o=[...L].sort((x,y)=>(i===X.sal?x.sal-y.sal:i===X.dia?x.dia-y.dia:CL.compare(String(x.a[i]),String(y.a[i])))*S.d);
+ $('th'+n).innerHTML='<tr>'+cs.map(j=>`<th onclick="ordenar(${j})">${esc(D.cab[j])}${S.i===j?(S.d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
+ $('tb'+n).innerHTML=o.slice(ini,ini+P).map(r=>'<tr>'+cs.map(j=>`<td>${cel(r,j)}</td>`).join('')+'</tr>').join('')||'<tr><td class="mu" style="padding:30px">Nenhum contrato encontrado.</td></tr>';
+ $('in'+n).textContent=`${L.length?ini+1:0}–${Math.min(ini+P,L.length)} de ${L.length}`;$('pa'+n).disabled=pg[k]===0;$('pn'+n).disabled=ini+P>=L.length;
+ if(s)$('sk').innerHTML=`<b>${SB.length}</b> contratos · <b>${brl(SB.reduce((a,x)=>a+x.sal,0))}</b>`;
+ else{const fc=$('fc').value;$('seg').innerHTML=[['','Todos',Bn.length],['Ativo','Ativos',Bn.filter(x=>!x.prej).length],['Prejuízo','Prejuízo',Bn.filter(x=>x.prej).length]].map(([v,l,c])=>`<button class="${fc===v?'on':''}" data-f="fc" data-k="${v}">${l}<span>${c}</span></button>`).join('')}}
+function ordenar(i){S.d=S.i===i?-S.d:1;S.i=i;tab(V==='saiu'?'s':'c')}
+function pagina(k,d){pg[k]+=d;tab(k)}
+function exportar(k){const L=k==='s'?SB:B,cs=cols(k),q=c=>'"'+String(c).replace(/"/g,'""')+'"',a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob(['\ufeff'+[cs.map(i=>D.cab[i]),...L.map(o=>cs.map(i=>i===2?(o.prej?'Prejuízo':'Ativo'):o.a[i]))].map(r=>r.map(q).join(';')).join('\r\n')],{type:'text/csv'}));a.download=(k==='s'?'saiu-de-base':'contratos')+'.csv';a.click()}
+
+function prever(rows){IMP=rows.map(r=>r.map(c=>c==null?'':String(c)));const h=IMP[0]||[],ic=h.findIndex(x=>norm(x).startsWith('contrato')),is=h.findIndex(x=>norm(x).startsWith('situa'));
+ if(IMP.length<2||ic<0){$('prev').innerHTML=IMP.length<2?'':'<span class="er">Coluna "Contrato" não encontrada no cabeçalho</span>';$('btnImp').disabled=true;return}
+ const inc=new Map();IMP.slice(1).forEach(r=>{const k=r[ic].trim();if(k&&!inc.has(k))inc.set(k,r)});
+ const ex=new Set(R.filter(o=>!o.saiu).map(o=>String(o.a[X.con]).trim()));let nv=0,fn=0,sai=0;
+ inc.forEach((r,k)=>{if(!ex.has(k)){nv++;if(is>=0&&norm(r[is]).includes('ficha nova'))fn++}});if($('saidas').checked)ex.forEach(k=>{if(!inc.has(k))sai++});
+ $('prev').innerHTML=`<b>${inc.size}</b> contratos · <b>${nv}</b> novos (<b>${fn}</b> fichas novas) · <b>${sai}</b> saem da base`+(sai>10&&sai>ex.size*.5?'<br><span class="er">⚠ Muitos contratos vão sair da base. Confira se este arquivo é a base completa.</span>':'');$('btnImp').disabled=false}
+async function salvarImp(){$('btnImp').disabled=true;toast('Salvando a base...');try{const r=await run('importar',$('dia').value,IMP,$('saidas').checked);
+ let av='';if($('guardar').checked&&IMPFILE){try{await enviar(IMPFILE)}catch(e){av=' · arquivo não foi guardado: '+(e.message||e)}}
+ toast(`${r.novos} novos (${r.fichas} fichas novas) · ${r.atualizados} atualizados · ${r.saiu} saíram da base`+av);IMP=[];IMPFILE=null;$('cola').value='';$('fn').textContent='';$('prev').textContent='';await carregar();ir('dash')}catch(e){toast('Erro: '+(e.message||e),1);$('btnImp').disabled=false}}
+const enviar=f=>new Promise((ok,no)=>{if(f.size>25e6)return no(new Error(f.name+' passa de 25 MB'));const r=new FileReader();r.onload=()=>run('enviarArquivo',f.name,f.type,r.result.split(',')[1]).then(ok,no);r.readAsDataURL(f)});
+function dz(id,cb){const z=$(id),i=z.querySelector('input');i.onchange=()=>{cb([...i.files]);i.value=''};['dragover','dragenter'].forEach(e=>z.addEventListener(e,x=>{x.preventDefault();z.classList.add('hv')}));['dragleave','drop'].forEach(e=>z.addEventListener(e,x=>{x.preventDefault();z.classList.remove('hv');if(e==='drop')cb([...x.dataTransfer.files])}))}
+const lerLib=()=>window.XLSX?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=ok;s.onerror=()=>no(new Error('Não consegui carregar o leitor de planilhas. Use a opção de colar.'));document.head.appendChild(s)});
+dz('dz1',async fs=>{const f=fs[0];if(!f)return;try{await lerLib()}catch(e){return toast(e.message,1)}
+ try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});prever(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}));IMPFILE=f;$('fn').textContent=f.name}catch(e){toast('Não consegui ler: '+e.message,1)}});
+async function subir(fs){for(const f of fs){try{toast('Enviando '+f.name+'...');await enviar(f);toast(f.name+' enviado ✔')}catch(e){toast('Erro: '+(e.message||e),1)}}arqs()}
+dz('dz2',subir);
+document.addEventListener('paste',e=>{if(!$('arquivos').classList.contains('on'))return;const fs=[...((e.clipboardData&&e.clipboardData.files)||[])];if(fs.length)subir(fs)});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-f]');if(!t)return;const el=$(t.dataset.f),k=t.dataset.k;el.value=el.value===k&&!t.dataset.go?'':k;aplicar();if(t.dataset.go)ir(t.dataset.go)});
+
+async function arqs(){try{A=await run('listarArquivos');rArq()}catch(e){erro(e)}}
+const ico=a=>/sheet|excel|csv|xls/i.test(a.tipo+a.nome)?'📗':/pdf/i.test(a.tipo)?'📕':'📄';
+function rArq(){const q=norm($('aq').value);$('ag').innerHTML=A.filter(a=>norm(a.nome).includes(q)).map(a=>{const im=a.tipo.startsWith('image/'),k=im?"ver('"+a.id+"')":"window.open('"+a.url+"')";
+ return `<div class="card fc"><div class="th" onclick="${k}">${im?`<img src="https://drive.google.com/thumbnail?id=${a.id}&sz=w400" onerror="this.outerHTML='🖼️'">`:ico(a)}</div><b title="${esc(a.nome)}">${esc(a.nome)}</b><small>${tam(a.tam)} · ${a.data}</small>
+ <div class="ac"><a class="btn sec" href="${a.url}" target="_blank">Abrir</a><a class="btn sec" href="https://drive.google.com/uc?export=download&id=${a.id}" target="_blank">Baixar</a><button class="btn red" onclick="dupla(this,()=>delArq('${a.id}'))">Excluir</button></div></div>`}).join('')||'<p class="mu">Nenhum arquivo.</p>'}
+function dupla(b,fn){if(b.dataset.a){fn();return}b.dataset.a=1;const o=b.innerHTML;b.innerHTML='Confirmar?';setTimeout(()=>{delete b.dataset.a;b.innerHTML=o},3500)}
+async function delArq(id){try{await run('excluirArquivo',id);toast('Arquivo excluído');arqs()}catch(e){toast(e.message,1)}}
+async function ver(id){$('lb').classList.add('on');$('lbi').src='';try{$('lbi').src=await run('obterImagem',id)}catch(e){$('lb').classList.remove('on');toast('Não consegui abrir a imagem',1)}}
+
+$('dia').value=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+ir('dash');
+if(typeof google==='undefined')erro('Abra o sistema pelo link do app da Web (Implantar › App da Web), não pelo arquivo HTML.');
+else{carregar();run('urlPlanilha').then(u=>{$('plan').href=u;$('plan').style.display=''}).catch(()=>{})}
+</script></body></html>
